@@ -1,9 +1,9 @@
 import dayjs from "dayjs";
 import utc from "dayjs/plugin/utc";
 import type { FastifyReply, FastifyRequest } from "fastify";
-import prisma from "../../config/prisma";
-import type { GetTransactionsQuery } from "../../schemas/transaction.schema";
-import type { TransactionFilter } from "../../types/transactions.types";
+import prisma from "../../config/prisma.js";
+import type { GetTransactionsQuery } from "../../schemas/transaction.schema.js";
+import type { TransactionFilter } from "../../types/transactions.types.js";
 
 dayjs.extend(utc);
 
@@ -11,7 +11,7 @@ export const getTransactions = async (
   request: FastifyRequest<{ Querystring: GetTransactionsQuery }>,
   reply: FastifyReply,
 ): Promise<void> => {
-  const userId = "fdjfgdsghdg";
+  const userId = request.userId;
 
   if (!userId) {
     return reply.status(401).send({ error: "Usuário não autenticado" });
@@ -49,9 +49,14 @@ export const getTransactions = async (
         },
       },
     });
+
     reply.send(transactions);
   } catch (err) {
-    request.log.error("Erro ao trazer transações", err);
+    request.log.error(
+      { err },
+      "Erro ao trazer transações"
+    );
+
     reply.status(500).send({ error: "Erro do servidor" });
   }
 };

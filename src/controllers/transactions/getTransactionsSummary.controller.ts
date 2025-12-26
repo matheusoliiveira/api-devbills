@@ -1,21 +1,23 @@
 import type { FastifyReply, FastifyRequest } from "fastify";
-import type { GetTransactionsSummaryQuery } from "../../schemas/transaction.schema";
+import type { GetTransactionsSummaryQuery } from "../../schemas/transaction.schema.js";
 import dayjs from "dayjs";
 import utc from "dayjs/plugin/utc";
-import prisma from "../../config/prisma";
-import type { CategorySymmary } from "../../types/category.types";
+import prisma from "../../config/prisma.js";
+import type { CategorySummary } from "../../types/category.types.js";
 import { TransactionType } from "@prisma/client";
-import type { TransactionSummary } from "../../types/transactions.types";
+import type { TransactionSummary } from "../../types/transactions.types.js";
+
 dayjs.extend(utc);
 
 export const getTransactionsSummary = async (
   request: FastifyRequest<{ Querystring: GetTransactionsSummaryQuery }>,
   reply: FastifyReply,
 ): Promise<void> => {
-  const userId = "fdjfgdsghdg";
+  const userId = request.userId;
 
   if (!userId) {
-    return reply.status(401).send({ error: "Usuário não autenticado" });
+    reply.status(401).send({ error: "Usuário não autenticado" });
+    return;
   }
 
   const { month, year } = request.query;
@@ -24,8 +26,16 @@ export const getTransactionsSummary = async (
     reply.status(400).send({ error: "Mês e Ano são Obrigatórios" });
     return;
   }
-  const startDate = dayjs.utc(`${year}-${month}-01`).startOf("month").toDate();
-  const endDate = dayjs.utc(startDate).endOf("month").toDate();
+
+  const startDate = dayjs
+    .utc(`${year}-${month}-01`)
+    .startOf("month")
+    .toDate();
+
+  const endDate = dayjs
+    .utc(startDate)
+    .endOf("month")
+    .toDate();
 
   try {
     const transactions = await prisma.transaction.findMany({
@@ -43,7 +53,8 @@ export const getTransactionsSummary = async (
 
     let totalExpenses = 0;
     let totalIncomes = 0;
-    const groupedExpenses = new Map<string, CategorySymmary>();
+
+    const groupedExpenses = new Map<string, CategorySummary>();
 
     for (const transaction of transactions) {
       if (transaction.type === TransactionType.expense) {
@@ -64,20 +75,32 @@ export const getTransactionsSummary = async (
       }
     }
 
+    const expensesByCategory =
+      totalExpenses > 0
+        ? Array.from(groupedExpenses.values())
+            .map((entry) => ({
+              ...entry,
+              percentage: Number(
+                ((entry.amount / totalExpenses) * 100).toFixed(2),
+              ),
+            }))
+            .sort((a, b) => b.amount - a.amount)
+        : [];
+
     const summary: TransactionSummary = {
-      totalExpenses,
-      totalIncomes,
+      totalExpenses: Number(totalExpenses.toFixed(2)),
+      totalIncomes: Number(totalIncomes.toFixed(2)),
       balance: Number((totalIncomes - totalExpenses).toFixed(2)),
-      expensesByCategory: Array.from(groupedExpenses.values())
-        .map((entry) => ({
-          ...entry,
-          percentage: Number.parseFloat(((entry.amount / totalExpenses) * 100).toFixed(2)),
-        }))
-        .sort((a, b) => b.amount - a.amount),
+      expensesByCategory,
     };
+
     reply.send(summary);
   } catch (err) {
-    request.log.error("Erro ao trazer transações", err);
+    request.log.error(
+      { err },
+      "Erro ao trazer transações"
+    );
+
     reply.status(500).send({ error: "Erro do servidor" });
   }
 };

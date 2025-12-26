@@ -1,5 +1,5 @@
 import type { TransactionType } from "@prisma/client";
-import type { CategorySymmary } from "./category.types";
+import type { CategorySummary } from "./category.types";
 
 export interface TransactionFilter {
   userId: string;
@@ -15,5 +15,5 @@ export interface TransactionSummary {
   totalExpenses: number;
   totalIncomes: number;
   balance: number;
-  expensesByCategory: CategorySymmary[];
+  expensesByCategory: CategorySummary[];
 }
