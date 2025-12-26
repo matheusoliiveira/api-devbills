@@ -37,8 +37,8 @@ model Transaction {
 
   categoryId String  @db.ObjectId
   category   Category @relation(
-  fields: [categoryId],
-  references: [id],
+  fields: [categoryId], 
+  references: [id], 
   onDelete   Cascade
   )
 
