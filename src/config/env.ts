@@ -1,16 +1,17 @@
 import { z } from "zod";
-import dotenv from "dotenv";
-
-dotenv.config();
 
 
+if (process.env.NODE_ENV !== "production") {
+  // eslint-disable-next-line @typescript-eslint/no-var-requires
+  require("dotenv").config();
+}
 
 const envSchema = z.object({
-  PORT: z.string().transform(Number).default("3333"),
+  PORT: z.coerce.number().default(3333),
+
   DATABASE_URL: z.string().min(5, "DATABASE_URL é obrigatório"),
-  NODE_ENV: z.enum(["dev", "teste", "prod"], {
-    message: "O Node ENV deve ser env, test ou prod",
-  }),
+
+  NODE_ENV: z.enum(["development", "test", "production"]).default("production"),
 
   // FIREBASE
   FIREBASE_PROJECT_ID: z.string().optional(),
@@ -21,7 +22,7 @@ const envSchema = z.object({
 const _env = envSchema.safeParse(process.env);
 
 if (!_env.success) {
-  console.error("Variáveis de ambiente INVÁLIDAS");
+  console.error("Variáveis de ambiente INVÁLIDAS", _env.error.format());
   process.exit(1);
 }
 
