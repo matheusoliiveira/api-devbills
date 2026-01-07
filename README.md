@@ -32,18 +32,43 @@ pelo frontend.
 ## 🗄️ Banco de Dados
 
 A aplicação utiliza **MongoDB** como banco de dados, integrado através do
-**Prisma ORM**.
+**Prisma ORM**, garantindo escalabilidade e flexibilidade no armazenamento
+dos dados financeiros.
 
 ---
 
-## ▶️ Como executar o projeto
+## ⚙️ Variáveis de Ambiente
 
-```bash
+Crie um arquivo `.env` na raiz do projeto com as seguintes variáveis:
+
+```env
+DATABASE_URL=
+FIREBASE_PROJECT_ID=
+FIREBASE_CLIENT_EMAIL=
+FIREBASE_PRIVATE_KEY=
+```
+
+📌 Funcionalidades
+Autenticação de usuários
+
+Cadastro de receitas e despesas
+
+Gerenciamento de categorias
+
+Validações e regras de negócio
+
+API RESTful segura e escalável
+
+--- 
+
+## ▶️ Como executar o projeto
+````bash
+Copiar código
 # Clone o repositório
 git clone https://github.com/matheusoliiveira/finly-api
 
 # Acesse a pasta
-cd api-finly
+cd finly-api
 
 # Instale as dependências
 npm install
@@ -53,3 +78,8 @@ npx prisma generate
 
 # Inicie a aplicação
 npm run dev
+🔗 Integração com Frontend
+Este backend é consumido pelo frontend da aplicação Finly.
+
+🔗 Repositório do Frontend:
+https://github.com/matheusoliiveira/finly-interface
